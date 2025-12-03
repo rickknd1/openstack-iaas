@@ -1,0 +1,63 @@
+# OpenStack Configuration Variables
+# Version: Caracal (2024.1) pour Ubuntu 22.04
+
+# ===========================================
+# NETWORK CONFIGURATION
+# ===========================================
+management_network: "10.0.0.0/24"
+provider_network: "192.168.43.0/24"
+
+# Node IPs
+controller_ip: "10.0.0.11"
+compute_ip: "10.0.0.31"
+storage_ip: "10.0.0.1"
+
+# External IPs
+controller_external_ip: "192.168.43.11"
+
+# ===========================================
+# DATABASE CONFIGURATION
+# ===========================================
+mysql_root_password: "openstack_root_pwd"
+
+# Database passwords for each service
+keystone_db_password: "keystone_dbpass"
+glance_db_password: "glance_dbpass"
+placement_db_password: "placement_dbpass"
+nova_db_password: "nova_dbpass"
+neutron_db_password: "neutron_dbpass"
+cinder_db_password: "cinder_dbpass"
+heat_db_password: "heat_dbpass"
+
+# ===========================================
+# RABBITMQ CONFIGURATION
+# ===========================================
+rabbitmq_user: "openstack"
+rabbitmq_password: "rabbit_openstack_pwd"
+
+# ===========================================
+# KEYSTONE CONFIGURATION
+# ===========================================
+admin_token: "ADMIN_TOKEN_SECRET"
+admin_password: "admin_secret_pwd"
+demo_password: "demo_pwd"
+
+# Service passwords
+glance_password: "glance_pass"
+placement_password: "placement_pass"
+nova_password: "nova_pass"
+neutron_password: "neutron_pass"
+cinder_password: "cinder_pass"
+heat_password: "heat_pass"
+
+# ===========================================
+# NEUTRON CONFIGURATION
+# ===========================================
+metadata_secret: "metadata_secret_key"
+provider_interface: "ens34"
+overlay_interface: "ens33"
+
+# ===========================================
+# OPENSTACK RELEASE
+# ===========================================
+openstack_release: "caracal"
