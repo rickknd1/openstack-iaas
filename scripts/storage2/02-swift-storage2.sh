@@ -1,8 +1,8 @@
 #!/bin/bash
 # =============================================================================
 # Script: 02-swift-storage2.sh
-# Description: Installe et configure Swift Storage sur Storage2
-# A executer sur: storage2 (192.168.100.150) - TOI
+# Description: Installe et configure Swift Storage
+# A executer sur: ton COMPUTE transforme en Storage2
 # =============================================================================
 
 set -e
@@ -11,14 +11,13 @@ echo "=========================================="
 echo "Installation de Swift Storage - Storage2"
 echo "=========================================="
 
-# Variables - TON IP
-STORAGE_IP="192.168.100.150"
+# Variables - IP locale de ta VM (reseau NAT)
+STORAGE_IP="192.168.43.28"
 
 # =============================================================================
 # 1. INSTALLATION DES PAQUETS
 # =============================================================================
-echo "[1/5] Installation des paquets Swift Storage..."
-apt update
+echo "[1/5] Installation des paquets Swift..."
 apt install -y xfsprogs rsync swift swift-account swift-container swift-object
 
 # =============================================================================
@@ -41,10 +40,9 @@ elif [ -b /dev/sdc ] && [ ! "$(mount | grep /dev/sdc)" ]; then
     mount /dev/sdc /srv/node/sdc
     echo "/dev/sdc /srv/node/sdc xfs noatime,nodiratime,logbufs=8 0 2" >> /etc/fstab
 else
-    echo "Creation d'un stockage loop pour Swift (20GB)..."
-    # Creer un fichier de 20Go pour Swift
+    echo "Creation d'un stockage loop pour Swift (10GB)..."
     if [ ! -f /var/lib/swift/swift-storage.img ]; then
-        dd if=/dev/zero of=/var/lib/swift/swift-storage.img bs=1M count=20480
+        dd if=/dev/zero of=/var/lib/swift/swift-storage.img bs=1M count=10240
     fi
 
     LOOP_DEVICE=$(losetup -f)
@@ -52,15 +50,21 @@ else
     mkfs.xfs -f ${LOOP_DEVICE}
     mount ${LOOP_DEVICE} /srv/node/sdc
 
-    # Script pour remount au boot
-    cat > /etc/rc.local << 'RCEOF'
-#!/bin/bash
-LOOP_DEVICE=$(losetup -f)
-losetup ${LOOP_DEVICE} /var/lib/swift/swift-storage.img
-mount ${LOOP_DEVICE} /srv/node/sdc
-exit 0
-RCEOF
-    chmod +x /etc/rc.local
+    # Service pour remount au boot
+    cat > /etc/systemd/system/swift-loop.service << 'SVCEOF'
+[Unit]
+Description=Setup Swift loop device
+Before=swift-account.service swift-container.service swift-object.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'losetup /dev/loop0 /var/lib/swift/swift-storage.img && mount /dev/loop0 /srv/node/sdc'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+SVCEOF
+    systemctl enable swift-loop.service
 fi
 
 chown -R swift:swift /srv/node
@@ -96,7 +100,6 @@ read only = False
 lock file = /var/lock/object.lock
 EOF
 
-# Activer rsync
 sed -i 's/RSYNC_ENABLE=false/RSYNC_ENABLE=true/' /etc/default/rsync
 systemctl restart rsync
 systemctl enable rsync
@@ -180,29 +183,41 @@ use = egg:swift#recon
 recon_cache_path = /var/cache/swift
 EOF
 
-# Creer les repertoires de cache
 mkdir -p /var/cache/swift
 chown -R swift:swift /var/cache/swift
 
 # =============================================================================
-# 5. CONFIGURATION SSH POUR LE CONTROLLER
+# 5. SERVICE POUR LA ROUTE RESEAU
 # =============================================================================
-echo "[5/5] Preparation de l'acces SSH..."
+echo "[5/5] Configuration route reseau persistante..."
 
-# S'assurer que SSH est actif
-systemctl enable ssh
-systemctl start ssh
+cat > /etc/systemd/system/swift-route.service << 'SVCEOF'
+[Unit]
+Description=Add route for Swift network
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/sbin/ip route add 192.168.100.0/24 via 192.168.43.2 dev ens38
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+SVCEOF
+
+systemctl enable swift-route.service
 
 echo "=========================================="
-echo "Swift Storage2 configure!"
+echo "Swift Storage2 installe!"
 echo ""
-echo "TON IP: ${STORAGE_IP}"
-echo "Ports ouverts: 6200, 6201, 6202"
+echo "IP locale: ${STORAGE_IP}"
+echo "Ports: 6200, 6201, 6202"
 echo ""
 echo "PROCHAINE ETAPE:"
-echo "  Dis a AMENI (controller) d'executer:"
-echo "  03-add-storage2-to-rings.sh"
+echo "  Dis a AMENI d'executer sur le CONTROLLER:"
+echo "  03-controller-add-storage2.sh"
 echo ""
-echo "  Puis toi, execute:"
-echo "  04-start-swift-services.sh"
+echo "  Elle devra utiliser l'IP: 192.168.100.155"
+echo "  (ton IP Wi-Fi visible sur le reseau)"
 echo "=========================================="

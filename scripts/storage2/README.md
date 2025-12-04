@@ -1,4 +1,4 @@
-# Configuration Swift - Storage2
+# Configuration Swift - Storage2 (via NAT)
 
 ## Ton infrastructure
 
@@ -9,49 +9,84 @@
 | Mme Hedyene | Compute2 | 192.168.100.154 |
 | Mme Cherni | Storage1 | 192.168.100.113 |
 | Lmallekh | Compute3 | 192.168.100.200 |
-| **TOI** | **Storage2** | **192.168.100.150** |
+| **TOI** | **Storage2** | **192.168.100.155** (via NAT) |
+
+## Configuration spéciale (NAT)
+
+Ton compute utilise NAT car le Wi-Fi ne supporte pas le Bridged VMware.
+
+- **IP locale VM**: 192.168.43.28 (réseau NAT)
+- **IP visible**: 192.168.100.155 (ton PC Windows via port forwarding)
 
 ---
 
 ## Étapes à suivre
 
+### Étape 0 - Configuration Windows (Port Forwarding)
+
+Sur ton PC Windows (PowerShell Admin):
+```powershell
+netsh interface portproxy add v4tov4 listenport=6200 listenaddress=192.168.100.155 connectport=6200 connectaddress=192.168.43.28
+netsh interface portproxy add v4tov4 listenport=6201 listenaddress=192.168.100.155 connectport=6201 connectaddress=192.168.43.28
+netsh interface portproxy add v4tov4 listenport=6202 listenaddress=192.168.100.155 connectport=6202 connectaddress=192.168.43.28
+
+netsh advfirewall firewall add rule name="Swift 6200" dir=in action=allow protocol=tcp localport=6200
+netsh advfirewall firewall add rule name="Swift 6201" dir=in action=allow protocol=tcp localport=6201
+netsh advfirewall firewall add rule name="Swift 6202" dir=in action=allow protocol=tcp localport=6202
+```
+
 ### Étape 1 - TOI (Storage2)
 ```bash
-bash 01-configure-hosts.sh
+bash 00-setup-network-nat.sh
 ```
-Configure ton fichier `/etc/hosts` avec tous les nodes du groupe.
+Configure le réseau et la route vers le controller.
 
 ### Étape 2 - TOI (Storage2)
 ```bash
+bash 01-chrony-storage2.sh
+```
+Installe et configure la synchronisation temps.
+
+### Étape 3 - TOI (Storage2)
+```bash
 bash 02-swift-storage2.sh
 ```
-Installe et configure Swift Storage sur ta machine.
+Installe et configure Swift Storage.
 
-### Étape 3 - AMENI (Controller)
-Donne ce script à Ameni pour qu'elle l'exécute sur le controller:
+### Étape 4 - AMENI (Controller)
 ```bash
-bash 03-add-storage2-to-rings.sh
+bash 03-controller-add-storage2.sh
 ```
-Ajoute ton node aux rings Swift et te copie les fichiers.
+Ajoute ton node aux rings Swift et t'envoie les fichiers.
 
-### Étape 4 - TOI (Storage2)
+### Étape 5 - TOI (Storage2)
+
+Après avoir reçu les fichiers d'Ameni:
 ```bash
-bash 04-start-swift-services.sh
+# Copie les fichiers reçus dans /etc/swift/
+bash 04-start-swift-storage2.sh
 ```
-Démarre tous les services Swift sur ta machine.
 
 ---
 
 ## Vérification
+
 Depuis le controller (Ameni):
 ```bash
 source /root/admin-openrc
 swift stat
+openstack container create test-container
+echo 'Hello Swift' > test.txt
+openstack object create test-container test.txt
+openstack object list test-container
 ```
 
 ---
 
 ## Ports utilisés
-- 6200 : Object Server
-- 6201 : Container Server
-- 6202 : Account Server
+
+| Port | Service | Redirection |
+|------|---------|-------------|
+| 6200 | Object Server | 192.168.100.155:6200 → 192.168.43.28:6200 |
+| 6201 | Container Server | 192.168.100.155:6201 → 192.168.43.28:6201 |
+| 6202 | Account Server | 192.168.100.155:6202 → 192.168.43.28:6202 |
