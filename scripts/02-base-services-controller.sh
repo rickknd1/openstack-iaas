@@ -38,14 +38,21 @@ EOF
 systemctl restart mariadb
 systemctl enable mariadb
 
-# Securisation de MariaDB
+# Securisation de MariaDB (compatible MariaDB 10.4+)
 echo "Securisation de MariaDB..."
 mysql -u root << EOF
-UPDATE mysql.user SET Password=PASSWORD('${MYSQL_ROOT_PASS}') WHERE User='root';
-DELETE FROM mysql.user WHERE User='';
-DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+-- Definir le mot de passe root (methode compatible 10.4+)
+ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASS}';
+
+-- Supprimer les utilisateurs anonymes
+DELETE FROM mysql.global_priv WHERE User='';
+
+-- Supprimer root distant
+DELETE FROM mysql.global_priv WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+
+-- Supprimer la base test
 DROP DATABASE IF EXISTS test;
-DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
+
 FLUSH PRIVILEGES;
 EOF
 
