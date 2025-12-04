@@ -5,8 +5,6 @@
 # A executer sur: controller UNIQUEMENT
 # =============================================================================
 
-set -e
-
 echo "=========================================="
 echo "Installation des services de base"
 echo "Controller Node"
@@ -16,6 +14,7 @@ echo "=========================================="
 MYSQL_ROOT_PASS="openstack_root_pwd"
 RABBITMQ_USER="openstack"
 RABBITMQ_PASS="rabbit_openstack_pwd"
+CONTROLLER_IP="10.0.0.11"
 
 # =============================================================================
 # 1. INSTALLATION ET CONFIGURATION DE MARIADB
@@ -26,7 +25,7 @@ apt install -y mariadb-server python3-pymysql
 # Configuration de MariaDB pour OpenStack
 cat > /etc/mysql/mariadb.conf.d/99-openstack.cnf << EOF
 [mysqld]
-bind-address = 10.0.0.11
+bind-address = ${CONTROLLER_IP}
 
 default-storage-engine = innodb
 innodb_file_per_table = on
@@ -40,21 +39,20 @@ systemctl enable mariadb
 
 # Securisation de MariaDB (compatible MariaDB 10.4+)
 echo "Securisation de MariaDB..."
-mysql -u root << EOF
--- Definir le mot de passe root (methode compatible 10.4+)
+
+# Test si le mot de passe root est deja defini
+if mysql -u root -p"${MYSQL_ROOT_PASS}" -e "SELECT 1" &>/dev/null; then
+    echo "MariaDB deja securise avec le mot de passe."
+else
+    # Essayer sans mot de passe (installation fraiche)
+    mysql -u root 2>/dev/null << EOSQL || echo "Configuration MariaDB deja effectuee"
 ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASS}';
-
--- Supprimer les utilisateurs anonymes
 DELETE FROM mysql.global_priv WHERE User='';
-
--- Supprimer root distant
 DELETE FROM mysql.global_priv WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
-
--- Supprimer la base test
 DROP DATABASE IF EXISTS test;
-
 FLUSH PRIVILEGES;
-EOF
+EOSQL
+fi
 
 echo "MariaDB installe et configure."
 
@@ -67,8 +65,8 @@ apt install -y rabbitmq-server
 systemctl enable rabbitmq-server
 systemctl start rabbitmq-server
 
-# Ajout de l'utilisateur OpenStack
-rabbitmqctl add_user ${RABBITMQ_USER} ${RABBITMQ_PASS} || true
+# Ajout de l'utilisateur OpenStack (ignore si existe deja)
+rabbitmqctl add_user ${RABBITMQ_USER} ${RABBITMQ_PASS} 2>/dev/null || echo "Utilisateur RabbitMQ existe deja"
 rabbitmqctl set_permissions ${RABBITMQ_USER} ".*" ".*" ".*"
 
 echo "RabbitMQ installe et configure."
@@ -79,8 +77,9 @@ echo "RabbitMQ installe et configure."
 echo "[3/3] Installation de Memcached..."
 apt install -y memcached python3-memcache
 
-# Configuration de Memcached
-sed -i 's/-l 127.0.0.1/-l 10.0.0.11/' /etc/memcached.conf
+# Configuration de Memcached pour ecouter sur l'IP du controller
+sed -i "s/-l 127.0.0.1/-l ${CONTROLLER_IP}/" /etc/memcached.conf
+sed -i "s/-l 10.0.0.11/-l ${CONTROLLER_IP}/" /etc/memcached.conf
 
 systemctl restart memcached
 systemctl enable memcached
@@ -97,3 +96,12 @@ echo "Verification des services:"
 echo "MariaDB: $(systemctl is-active mariadb)"
 echo "RabbitMQ: $(systemctl is-active rabbitmq-server)"
 echo "Memcached: $(systemctl is-active memcached)"
+
+# Test de connexion MariaDB
+echo ""
+echo "Test connexion MariaDB..."
+if mysql -u root -p"${MYSQL_ROOT_PASS}" -e "SELECT 'Connexion OK'" 2>/dev/null; then
+    echo "MariaDB fonctionne correctement!"
+else
+    echo "ERREUR: Impossible de se connecter a MariaDB"
+fi
