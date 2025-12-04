@@ -6,8 +6,6 @@
 # Prerequis: Keystone doit etre installe
 # =============================================================================
 
-set -e
-
 echo "=========================================="
 echo "Installation de Glance (Image Service)"
 echo "=========================================="
@@ -39,19 +37,22 @@ echo "Base de donnees Glance creee."
 # =============================================================================
 echo "[2/6] Creation de l'utilisateur Glance dans Keystone..."
 
-# Creer l'utilisateur glance
-openstack user create --domain default --password ${GLANCE_PASS} glance
+# Creer le projet service s'il n'existe pas
+openstack project create --domain default --description "Service Project" service 2>/dev/null || echo "Projet service existe deja"
+
+# Creer l'utilisateur glance (ignorer si existe)
+openstack user create --domain default --password ${GLANCE_PASS} glance 2>/dev/null || echo "Utilisateur glance existe deja"
 
 # Ajouter le role admin a l'utilisateur glance
-openstack role add --project service --user glance admin
+openstack role add --project service --user glance admin 2>/dev/null || echo "Role deja assigne"
 
-# Creer le service glance
-openstack service create --name glance --description "OpenStack Image" image
+# Creer le service glance (ignorer si existe)
+openstack service create --name glance --description "OpenStack Image" image 2>/dev/null || echo "Service glance existe deja"
 
-# Creer les endpoints
-openstack endpoint create --region RegionOne image public http://controller:9292
-openstack endpoint create --region RegionOne image internal http://controller:9292
-openstack endpoint create --region RegionOne image admin http://controller:9292
+# Creer les endpoints (ignorer si existent)
+openstack endpoint create --region RegionOne image public http://controller:9292 2>/dev/null || echo "Endpoint public existe"
+openstack endpoint create --region RegionOne image internal http://controller:9292 2>/dev/null || echo "Endpoint internal existe"
+openstack endpoint create --region RegionOne image admin http://controller:9292 2>/dev/null || echo "Endpoint admin existe"
 
 echo "Utilisateur et service Glance crees."
 

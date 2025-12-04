@@ -108,6 +108,13 @@ EOF
 
 chmod 600 /root/admin-openrc
 
+# =============================================================================
+# CREATION DU PROJET SERVICE
+# =============================================================================
+echo "Creation du projet service..."
+source /root/admin-openrc
+openstack project create --domain default --description "Service Project" service 2>/dev/null || echo "Projet service existe deja"
+
 echo "=========================================="
 echo "Keystone installe avec succes!"
 echo ""
