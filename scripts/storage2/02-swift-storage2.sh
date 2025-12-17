@@ -2,7 +2,7 @@
 # =============================================================================
 # Script: 02-swift-storage2.sh
 # Description: Installe et configure Swift Storage
-# A executer sur: ton COMPUTE transforme en Storage2
+# A executer sur: Storage2 (192.168.100.155)
 # =============================================================================
 
 set -e
@@ -11,19 +11,20 @@ echo "=========================================="
 echo "Installation de Swift Storage - Storage2"
 echo "=========================================="
 
-# Variables - IP locale de ta VM (reseau NAT)
-STORAGE_IP="192.168.43.28"
+# Variables - IP de Storage2 sur le reseau du groupe
+STORAGE_IP="192.168.100.155"
 
 # =============================================================================
 # 1. INSTALLATION DES PAQUETS
 # =============================================================================
-echo "[1/5] Installation des paquets Swift..."
+echo "[1/4] Installation des paquets Swift..."
+apt update
 apt install -y xfsprogs rsync swift swift-account swift-container swift-object
 
 # =============================================================================
 # 2. PREPARATION DU STOCKAGE
 # =============================================================================
-echo "[2/5] Preparation du stockage..."
+echo "[2/4] Preparation du stockage..."
 
 mkdir -p /srv/node/sdc
 mkdir -p /var/lib/swift
@@ -72,7 +73,7 @@ chown -R swift:swift /srv/node
 # =============================================================================
 # 3. CONFIGURATION DE RSYNC
 # =============================================================================
-echo "[3/5] Configuration de rsync..."
+echo "[3/4] Configuration de rsync..."
 
 cat > /etc/rsyncd.conf << EOF
 uid = swift
@@ -107,7 +108,7 @@ systemctl enable rsync
 # =============================================================================
 # 4. CONFIGURATION DES SERVICES SWIFT
 # =============================================================================
-echo "[4/5] Configuration des services Swift..."
+echo "[4/4] Configuration des services Swift..."
 
 mkdir -p /etc/swift
 
@@ -186,38 +187,15 @@ EOF
 mkdir -p /var/cache/swift
 chown -R swift:swift /var/cache/swift
 
-# =============================================================================
-# 5. SERVICE POUR LA ROUTE RESEAU
-# =============================================================================
-echo "[5/5] Configuration route reseau persistante..."
-
-cat > /etc/systemd/system/swift-route.service << 'SVCEOF'
-[Unit]
-Description=Add route for Swift network
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Type=oneshot
-ExecStart=/sbin/ip route add 192.168.100.0/24 via 192.168.43.2 dev ens38
-RemainAfterExit=yes
-
-[Install]
-WantedBy=multi-user.target
-SVCEOF
-
-systemctl enable swift-route.service
-
 echo "=========================================="
 echo "Swift Storage2 installe!"
 echo ""
-echo "IP locale: ${STORAGE_IP}"
-echo "Ports: 6200, 6201, 6202"
+echo "IP: ${STORAGE_IP}"
+echo "Ports: 6200 (object), 6201 (container), 6202 (account)"
 echo ""
 echo "PROCHAINE ETAPE:"
 echo "  Dis a AMENI d'executer sur le CONTROLLER:"
-echo "  03-controller-add-storage2.sh"
+echo "  bash 03-controller-add-storage2.sh"
 echo ""
-echo "  Elle devra utiliser l'IP: 192.168.100.155"
-echo "  (ton IP Wi-Fi visible sur le reseau)"
+echo "  Puis elle t'enverra les fichiers ring."
 echo "=========================================="
