@@ -48,22 +48,17 @@ EOF
 echo "/etc/hosts configure."
 
 # =============================================================================
-# 2. CONFIGURATION ROUTE RESEAU (NAT vers reseau collegues)
+# 2. CONFIGURATION RESEAU
 # =============================================================================
-echo "[2/2] Configuration de la route reseau..."
+echo "[2/2] Configuration du reseau..."
 
 # Activer ens38 (NAT) si pas deja fait
 ip link set ens38 up 2>/dev/null || true
 dhclient ens38 2>/dev/null || true
 
-# Ajouter route vers le reseau des collegues via la passerelle NAT
-ip route add 192.168.100.0/24 via 192.168.43.1 dev ens38 2>/dev/null || echo "Route deja presente ou via autre interface"
-
-# Test connectivite
 echo ""
-echo "Test de connectivite vers le controller..."
-ping -c 2 192.168.100.136 && echo "OK: Controller joignable!" || echo "ATTENTION: Controller non joignable - verifiez le reseau"
-
+echo "NOTE: Votre VM est derriere NAT. Les collegues vous contactent via"
+echo "      le port forwarding Windows (192.168.100.155 -> 192.168.43.28)"
 echo ""
 echo "=========================================="
 echo "Configuration terminee!"

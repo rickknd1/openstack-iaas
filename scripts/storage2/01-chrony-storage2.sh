@@ -87,7 +87,8 @@ makestep 1 3
 # leap-smeared time.
 #leapsectz right/UTC
 
-server controller iburst
+# Utilise NTP public car la VM ne peut pas joindre le controller via NAT
+pool ntp.ubuntu.com iburst maxsources 4
 EOF
 
 # =============================================================================
