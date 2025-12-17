@@ -11,8 +11,9 @@ echo "=========================================="
 echo "Installation de Swift Storage - Storage2"
 echo "=========================================="
 
-# Variables - IP de Storage2 sur le reseau du groupe
-STORAGE_IP="192.168.100.155"
+# Variables - IP locale de la VM (NAT)
+# Les collegues accedent via 192.168.100.155 (PC Windows) qui redirige ici
+STORAGE_IP="192.168.43.28"
 
 # =============================================================================
 # 1. INSTALLATION DES PAQUETS
@@ -190,12 +191,16 @@ chown -R swift:swift /var/cache/swift
 echo "=========================================="
 echo "Swift Storage2 installe!"
 echo ""
-echo "IP: ${STORAGE_IP}"
+echo "IP locale (bind): ${STORAGE_IP}"
+echo "IP visible (collegues): 192.168.100.155"
 echo "Ports: 6200 (object), 6201 (container), 6202 (account)"
+echo ""
+echo "IMPORTANT: Assure-toi que le port forwarding Windows est configure!"
 echo ""
 echo "PROCHAINE ETAPE:"
 echo "  Dis a AMENI d'executer sur le CONTROLLER:"
 echo "  bash 03-controller-add-storage2.sh"
 echo ""
+echo "  Elle utilisera l'IP: 192.168.100.155"
 echo "  Puis elle t'enverra les fichiers ring."
 echo "=========================================="

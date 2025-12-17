@@ -1,15 +1,20 @@
 #!/bin/bash
 # =============================================================================
 # Script: 00-configure-hosts.sh
-# Description: Configure /etc/hosts avec les IPs du groupe
-# A executer sur: ton COMPUTE transforme en Storage2
+# Description: Configure /etc/hosts et le reseau pour Storage2 (via NAT)
+# A executer sur: Storage2
 # =============================================================================
 
 set -e
 
 echo "=========================================="
-echo "Configuration de /etc/hosts - Storage2"
+echo "Configuration reseau et hosts - Storage2"
 echo "=========================================="
+
+# =============================================================================
+# 1. CONFIGURATION /etc/hosts
+# =============================================================================
+echo "[1/2] Configuration de /etc/hosts..."
 
 # Backup
 cp /etc/hosts /etc/hosts.backup.$(date +%Y%m%d%H%M%S)
@@ -36,15 +41,32 @@ cat >> /etc/hosts << 'EOF'
 192.168.100.113 storage1
 #Lmallekh
 192.168.100.200 compute3
-#Moi
+#Moi (IP visible via port forwarding Windows)
 192.168.100.155 storage2
 EOF
 
-echo "Fichier /etc/hosts mis a jour:"
+echo "/etc/hosts configure."
+
+# =============================================================================
+# 2. CONFIGURATION ROUTE RESEAU (NAT vers reseau collegues)
+# =============================================================================
+echo "[2/2] Configuration de la route reseau..."
+
+# Activer ens38 (NAT) si pas deja fait
+ip link set ens38 up 2>/dev/null || true
+dhclient ens38 2>/dev/null || true
+
+# Ajouter route vers le reseau des collegues via la passerelle NAT
+ip route add 192.168.100.0/24 via 192.168.43.1 dev ens38 2>/dev/null || echo "Route deja presente ou via autre interface"
+
+# Test connectivite
 echo ""
-cat /etc/hosts
+echo "Test de connectivite vers le controller..."
+ping -c 2 192.168.100.136 && echo "OK: Controller joignable!" || echo "ATTENTION: Controller non joignable - verifiez le reseau"
 
 echo ""
 echo "=========================================="
-echo "/etc/hosts configure!"
+echo "Configuration terminee!"
+echo ""
+echo "PROCHAINE ETAPE: bash 01-chrony-storage2.sh"
 echo "=========================================="
