@@ -16,12 +16,25 @@ echo "=========================================="
 # =============================================================================
 echo "[1/6] Configuration de /etc/hosts..."
 
+# Supprimer anciennes entrees si elles existent
+sed -i '/controller/d' /etc/hosts
+sed -i '/compute/d' /etc/hosts
+sed -i '/storage/d' /etc/hosts
+
 cat >> /etc/hosts << 'EOF'
 
-# OpenStack Nodes
-10.0.0.11   controller
-10.0.0.31   compute
-10.0.0.1    storage
+# OpenStack Nodes (NAT - 192.168.10.0/24)
+192.168.10.11   controller
+192.168.10.31   compute
+192.168.10.41   storage
+
+# Infrastructure classe (pour connexion future)
+# 192.168.100.136  controller-ameni
+# 192.168.100.172  compute1-fandouli
+# 192.168.100.154  compute2-hedyene
+# 192.168.100.113  storage1-cherni
+# 192.168.100.200  compute3-lmallekh
+# 192.168.100.155  storage2-toi
 EOF
 
 echo "Fichier /etc/hosts configure."
@@ -46,7 +59,8 @@ if [ "$HOSTNAME" == "controller" ]; then
     cat > /etc/chrony/chrony.conf << 'EOF'
 # Configuration Chrony pour le Controller OpenStack
 server ntp.ubuntu.com iburst
-allow 10.0.0.0/24
+server pool.ntp.org iburst
+allow 192.168.10.0/24
 local stratum 10
 EOF
 else

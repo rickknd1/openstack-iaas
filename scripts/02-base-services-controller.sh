@@ -14,7 +14,7 @@ echo "=========================================="
 MYSQL_ROOT_PASS="openstack_root_pwd"
 RABBITMQ_USER="openstack"
 RABBITMQ_PASS="rabbit_openstack_pwd"
-CONTROLLER_IP="10.0.0.11"
+CONTROLLER_IP="192.168.10.11"
 
 # =============================================================================
 # 1. INSTALLATION ET CONFIGURATION DE MARIADB
@@ -79,7 +79,6 @@ apt install -y memcached python3-memcache
 
 # Configuration de Memcached pour ecouter sur l'IP du controller
 sed -i "s/-l 127.0.0.1/-l ${CONTROLLER_IP}/" /etc/memcached.conf
-sed -i "s/-l 10.0.0.11/-l ${CONTROLLER_IP}/" /etc/memcached.conf
 
 systemctl restart memcached
 systemctl enable memcached

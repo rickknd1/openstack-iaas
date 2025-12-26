@@ -18,7 +18,7 @@ NOVA_DB_PASS="nova_dbpass"
 NOVA_PASS="nova_pass"
 PLACEMENT_PASS="placement_pass"
 RABBITMQ_PASS="rabbit_openstack_pwd"
-CONTROLLER_IP="10.0.0.11"
+CONTROLLER_IP="192.168.10.11"
 
 # Charger les credentials admin
 source /root/admin-openrc
@@ -50,18 +50,18 @@ echo "Bases de donnees Nova creees."
 echo "[2/6] Creation de l'utilisateur Nova dans Keystone..."
 
 # Creer l'utilisateur nova
-openstack user create --domain default --password ${NOVA_PASS} nova
+openstack user create --domain default --password ${NOVA_PASS} nova 2>/dev/null || echo "User nova existe"
 
 # Ajouter le role admin
-openstack role add --project service --user nova admin
+openstack role add --project service --user nova admin 2>/dev/null || true
 
 # Creer le service compute
-openstack service create --name nova --description "OpenStack Compute" compute
+openstack service create --name nova --description "OpenStack Compute" compute 2>/dev/null || echo "Service existe"
 
 # Creer les endpoints
-openstack endpoint create --region RegionOne compute public http://controller:8774/v2.1
-openstack endpoint create --region RegionOne compute internal http://controller:8774/v2.1
-openstack endpoint create --region RegionOne compute admin http://controller:8774/v2.1
+openstack endpoint create --region RegionOne compute public http://controller:8774/v2.1 2>/dev/null || true
+openstack endpoint create --region RegionOne compute internal http://controller:8774/v2.1 2>/dev/null || true
+openstack endpoint create --region RegionOne compute admin http://controller:8774/v2.1 2>/dev/null || true
 
 echo "Utilisateur et service Nova crees."
 

@@ -22,13 +22,13 @@ echo "[1/4] Creation du reseau provider..."
 
 openstack network create --share --external \
   --provider-physical-network provider \
-  --provider-network-type flat provider
+  --provider-network-type flat provider 2>/dev/null || echo "Network provider existe"
 
 openstack subnet create --network provider \
-  --allocation-pool start=192.168.43.100,end=192.168.43.200 \
+  --allocation-pool start=192.168.10.100,end=192.168.10.200 \
   --dns-nameserver 8.8.8.8 \
-  --gateway 192.168.43.1 \
-  --subnet-range 192.168.43.0/24 provider-subnet
+  --gateway 192.168.10.2 \
+  --subnet-range 192.168.10.0/24 provider-subnet 2>/dev/null || echo "Subnet existe"
 
 echo "Reseau provider cree."
 
@@ -37,12 +37,12 @@ echo "Reseau provider cree."
 # =============================================================================
 echo "[2/4] Creation du reseau self-service..."
 
-openstack network create selfservice
+openstack network create selfservice 2>/dev/null || echo "Network selfservice existe"
 
 openstack subnet create --network selfservice \
   --dns-nameserver 8.8.8.8 \
   --gateway 10.10.0.1 \
-  --subnet-range 10.10.0.0/24 selfservice-subnet
+  --subnet-range 10.10.0.0/24 selfservice-subnet 2>/dev/null || echo "Subnet existe"
 
 echo "Reseau self-service cree."
 
@@ -51,13 +51,13 @@ echo "Reseau self-service cree."
 # =============================================================================
 echo "[3/4] Creation du routeur..."
 
-openstack router create router
+openstack router create router 2>/dev/null || echo "Router existe"
 
 # Connecter le routeur au reseau externe
-openstack router set --external-gateway provider router
+openstack router set --external-gateway provider router 2>/dev/null || true
 
 # Connecter le routeur au sous-reseau interne
-openstack router add subnet router selfservice-subnet
+openstack router add subnet router selfservice-subnet 2>/dev/null || true
 
 echo "Routeur cree et configure."
 
@@ -67,22 +67,22 @@ echo "Routeur cree et configure."
 echo "[4/4] Configuration des security groups..."
 
 # Autoriser ICMP (ping)
-openstack security group rule create --proto icmp default
+openstack security group rule create --proto icmp default 2>/dev/null || true
 
 # Autoriser SSH
-openstack security group rule create --proto tcp --dst-port 22 default
+openstack security group rule create --proto tcp --dst-port 22 default 2>/dev/null || true
 
 # Autoriser HTTP
-openstack security group rule create --proto tcp --dst-port 80 default
+openstack security group rule create --proto tcp --dst-port 80 default 2>/dev/null || true
 
 # Autoriser HTTPS
-openstack security group rule create --proto tcp --dst-port 443 default
+openstack security group rule create --proto tcp --dst-port 443 default 2>/dev/null || true
 
 echo "=========================================="
 echo "Reseaux configures avec succes!"
 echo ""
 echo "Reseaux crees:"
-echo "  - provider (externe): 192.168.43.0/24"
+echo "  - provider (externe): 192.168.10.0/24"
 echo "  - selfservice (interne): 10.10.0.0/24"
 echo ""
 echo "Verification:"

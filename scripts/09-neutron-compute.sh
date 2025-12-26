@@ -14,8 +14,8 @@ echo "=========================================="
 # Variables
 NEUTRON_PASS="neutron_pass"
 RABBITMQ_PASS="rabbit_openstack_pwd"
-COMPUTE_IP="10.0.0.31"
-PROVIDER_INTERFACE="ens34"
+COMPUTE_IP="192.168.10.31"
+PROVIDER_INTERFACE="ens33"
 
 # =============================================================================
 # 1. INSTALLATION DE NEUTRON

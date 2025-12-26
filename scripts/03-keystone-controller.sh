@@ -15,7 +15,7 @@ echo "=========================================="
 MYSQL_ROOT_PASS="openstack_root_pwd"
 KEYSTONE_DB_PASS="keystone_dbpass"
 ADMIN_PASS="admin_secret_pwd"
-CONTROLLER_IP="10.0.0.11"
+CONTROLLER_IP="192.168.10.11"
 
 # =============================================================================
 # 1. CREATION DE LA BASE DE DONNEES KEYSTONE

@@ -4,16 +4,29 @@
 # ===========================================
 # NETWORK CONFIGURATION
 # ===========================================
-management_network: "10.0.0.0/24"
-provider_network: "192.168.43.0/24"
+# ens33 (NAT) : 192.168.10.0/24 - Management OpenStack
+# ens34 (Bridged) : 192.168.100.0/24 - Connexion classe (future)
+management_network: "192.168.10.0/24"
+provider_network: "192.168.10.0/24"
 
-# Node IPs
-controller_ip: "10.0.0.11"
-compute_ip: "10.0.0.31"
-storage_ip: "10.0.0.1"
+# Node IPs (ens33 - NAT)
+controller_ip: "192.168.10.11"
+compute_ip: "192.168.10.31"
+storage_ip: "192.168.10.41"
 
 # External IPs
-controller_external_ip: "192.168.43.11"
+controller_external_ip: "192.168.10.11"
+
+# Gateway VMware NAT
+gateway_ip: "192.168.10.2"
+
+# IPs CLASSE (ens34 - Bridged) - Pour plus tard
+# Ameni (Controller): 192.168.100.136
+# Mme Fandouli (Compute1): 192.168.100.172
+# Mme Hedyene (Compute2): 192.168.100.154
+# Mme Cherni (Storage1): 192.168.100.113
+# Lmallekh (Compute3): 192.168.100.200
+# Toi (Storage2): 192.168.100.155
 
 # ===========================================
 # DATABASE CONFIGURATION
@@ -54,7 +67,8 @@ heat_password: "heat_pass"
 # NEUTRON CONFIGURATION
 # ===========================================
 metadata_secret: "metadata_secret_key"
-provider_interface: "ens34"
+# ens33 pour management (NAT)
+provider_interface: "ens33"
 overlay_interface: "ens33"
 
 # ===========================================

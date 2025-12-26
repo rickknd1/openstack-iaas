@@ -7,7 +7,7 @@ Ce projet deploie une infrastructure OpenStack complete sur 3 machines virtuelle
 ```
 +-------------------+     +-------------------+     +-------------------+
 |    CONTROLLER     |     |      COMPUTE      |     |      STORAGE      |
-|   10.0.0.11       |     |    10.0.0.31      |     |    10.0.0.1       |
+|  192.168.10.11    |     |   192.168.10.31   |     |   192.168.10.41   |
 +-------------------+     +-------------------+     +-------------------+
 |                   |     |                   |     |                   |
 | - Keystone        |     | - Nova Compute    |     | - Cinder Volume   |
@@ -22,114 +22,146 @@ Ce projet deploie une infrastructure OpenStack complete sur 3 machines virtuelle
 +-------------------+     +-------------------+     +-------------------+
         |                         |                         |
         +-----------+-------------+-----------+-------------+
-                    |                         |
-              ens33 (Management)        ens34 (Provider)
-              10.0.0.0/24              192.168.43.0/24
+                    |
+              VMnet8 (NAT)
+           192.168.10.0/24
 ```
 
 ## Configuration Reseau
 
-| Node       | ens33 (Management) | ens34 (Provider)   |
-|------------|--------------------|--------------------|
-| Controller | 10.0.0.11/24       | 192.168.43.11/24   |
-| Compute    | 10.0.0.31/24       | 10.0.1.31/24       |
-| Storage    | 10.0.0.1/24        | -                  |
+### Reseau actuel (NAT - pour travail solo)
+
+| Node       | ens33 (NAT)        | Hostname   |
+|------------|--------------------|------------|
+| Controller | 192.168.10.11/24   | controller |
+| Compute    | 192.168.10.31/24   | compute    |
+| Storage    | 192.168.10.41/24   | storage    |
+
+Gateway: 192.168.10.2 (VMware NAT)
+
+### Reseau classe (Bridged - pour travail en equipe)
+
+| Membre      | Role       | IP               |
+|-------------|------------|------------------|
+| Ameni       | Controller | 192.168.100.136  |
+| Mme Fandouli| Compute1   | 192.168.100.172  |
+| Mme Hedyene | Compute2   | 192.168.100.154  |
+| Mme Cherni  | Storage1   | 192.168.100.113  |
+| Lmallekh    | Compute3   | 192.168.100.200  |
+| **Toi**     | Storage2   | 192.168.100.155  |
 
 ## Prerequis
 
 - 3 VMs Ubuntu 22.04 Server
 - Minimum 4 Go RAM par VM (8 Go recommande pour controller)
-- 2 interfaces reseau sur controller et compute
+- VMware avec VMnet8 (NAT) configure
 - Acces root sur toutes les VMs
 - Connectivite reseau entre les VMs
 
 ## Ordre d'Execution des Scripts
 
+### Phase 0: Configuration Reseau (sur CHAQUE VM)
+```bash
+# Sur controller
+sudo bash 00-setup-network-controller.sh
+
+# Sur compute
+sudo bash 00-setup-network-compute.sh
+
+# Sur storage
+sudo bash 00-setup-network-storage.sh
+```
+
 ### Phase 1: Prerequis (sur TOUTES les VMs)
 ```bash
 # Sur controller, compute ET storage
-./01-prerequisites-all-nodes.sh
+sudo bash 01-prerequisites-all-nodes.sh
+# Puis redemarrer: sudo reboot
 ```
 
 ### Phase 2: Services de Base (sur CONTROLLER uniquement)
 ```bash
 # Sur controller
-./02-base-services-controller.sh
+sudo bash 02-base-services-controller.sh
 ```
 
 ### Phase 3: Services OpenStack Core
 
 ```bash
 # Sur controller
-./03-keystone-controller.sh
-./04-glance-controller.sh
-./05-placement-controller.sh
-./06-nova-controller.sh
+sudo bash 03-keystone-controller.sh
+sudo bash 04-glance-controller.sh
+sudo bash 05-placement-controller.sh
+sudo bash 06-nova-controller.sh
 
 # Sur compute
-./07-nova-compute.sh
+sudo bash 07-nova-compute.sh
+
+# Sur controller (decouvrir le compute)
+source /root/admin-openrc
+su -s /bin/sh -c 'nova-manage cell_v2 discover_hosts --verbose' nova
 
 # Sur controller
-./08-neutron-controller.sh
+sudo bash 08-neutron-controller.sh
 
 # Sur compute
-./09-neutron-compute.sh
+sudo bash 09-neutron-compute.sh
 
 # Sur controller
-./10-horizon-controller.sh
+sudo bash 10-horizon-controller.sh
 ```
 
 ### Phase 4: Storage Services
 
 ```bash
 # Sur controller
-./11-cinder-controller.sh
+sudo bash 11-cinder-controller.sh
 
 # Sur storage
-./12-cinder-storage.sh
+sudo bash 12-cinder-storage.sh
 
 # Sur controller
-./13-swift-controller.sh
+sudo bash 13-swift-controller.sh
 
 # Sur storage
-./14-swift-storage.sh
+sudo bash 14-swift-storage.sh
 
 # Sur controller
-./15-swift-finalize.sh
+sudo bash 15-swift-finalize.sh
 ```
 
 ### Phase 5: Orchestration
 
 ```bash
 # Sur controller
-./16-heat-controller.sh
+sudo bash 16-heat-controller.sh
 ```
 
 ### Phase 6: Monitoring
 
 ```bash
 # Sur controller
-./17-monitoring-controller.sh
+sudo bash 17-monitoring-controller.sh
 
 # Sur compute ET storage
-./18-node-exporter-nodes.sh
+sudo bash 18-node-exporter-nodes.sh
 ```
 
 ### Phase 7: Configuration Finale
 
 ```bash
 # Sur controller
-./19-create-networks.sh
-./20-test-instance.sh
+sudo bash 19-create-networks.sh
+sudo bash 20-test-instance.sh
 ```
 
 ## Acces aux Interfaces
 
-| Service    | URL                           | Credentials         |
-|------------|-------------------------------|---------------------|
-| Horizon    | http://10.0.0.11/horizon      | admin / admin_secret_pwd |
-| Prometheus | http://10.0.0.11:9090         | -                   |
-| Grafana    | http://10.0.0.11:3000         | admin / admin       |
+| Service    | URL                              | Credentials              |
+|------------|----------------------------------|--------------------------|
+| Horizon    | http://192.168.10.11/horizon     | admin / admin_secret_pwd |
+| Prometheus | http://192.168.10.11:9090        | -                        |
+| Grafana    | http://192.168.10.11:3000        | admin / admin            |
 
 ## Commandes de Verification
 
@@ -218,12 +250,15 @@ systemctl status cinder-scheduler cinder-volume
 ## Structure des Fichiers
 
 ```
-openstack/
+openstack-iaas/
 ├── README.md
 ├── inventory.ini
 ├── group_vars/
 │   └── all.yml
 └── scripts/
+    ├── 00-setup-network-controller.sh  # NEW
+    ├── 00-setup-network-compute.sh     # NEW
+    ├── 00-setup-network-storage.sh     # NEW
     ├── 01-prerequisites-all-nodes.sh
     ├── 02-base-services-controller.sh
     ├── 03-keystone-controller.sh

@@ -20,8 +20,8 @@ NEUTRON_PASS="neutron_pass"
 NOVA_PASS="nova_pass"
 RABBITMQ_PASS="rabbit_openstack_pwd"
 METADATA_SECRET="metadata_secret_key"
-CONTROLLER_IP="10.0.0.11"
-PROVIDER_INTERFACE="ens34"  # Interface reseau externe
+CONTROLLER_IP="192.168.10.11"
+PROVIDER_INTERFACE="ens33"
 
 # Charger les credentials admin
 source /root/admin-openrc
@@ -45,13 +45,13 @@ echo "Base de donnees Neutron creee."
 # =============================================================================
 echo "[2/7] Creation de l'utilisateur Neutron dans Keystone..."
 
-openstack user create --domain default --password ${NEUTRON_PASS} neutron
-openstack role add --project service --user neutron admin
-openstack service create --name neutron --description "OpenStack Networking" network
+openstack user create --domain default --password ${NEUTRON_PASS} neutron 2>/dev/null || echo "User existe"
+openstack role add --project service --user neutron admin 2>/dev/null || true
+openstack service create --name neutron --description "OpenStack Networking" network 2>/dev/null || echo "Service existe"
 
-openstack endpoint create --region RegionOne network public http://controller:9696
-openstack endpoint create --region RegionOne network internal http://controller:9696
-openstack endpoint create --region RegionOne network admin http://controller:9696
+openstack endpoint create --region RegionOne network public http://controller:9696 2>/dev/null || true
+openstack endpoint create --region RegionOne network internal http://controller:9696 2>/dev/null || true
+openstack endpoint create --region RegionOne network admin http://controller:9696 2>/dev/null || true
 
 echo "Utilisateur et service Neutron crees."
 

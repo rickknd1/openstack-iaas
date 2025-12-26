@@ -16,8 +16,8 @@ echo "=========================================="
 NOVA_PASS="nova_pass"
 PLACEMENT_PASS="placement_pass"
 RABBITMQ_PASS="rabbit_openstack_pwd"
-COMPUTE_IP="10.0.0.31"
-CONTROLLER_IP="10.0.0.11"
+COMPUTE_IP="192.168.10.31"
+CONTROLLER_IP="192.168.10.11"
 
 # =============================================================================
 # 1. INSTALLATION DE NOVA COMPUTE

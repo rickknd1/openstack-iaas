@@ -14,7 +14,7 @@ echo "=========================================="
 # Variables
 CINDER_PASS="cinder_pass"
 RABBITMQ_PASS="rabbit_openstack_pwd"
-STORAGE_IP="10.0.0.1"
+STORAGE_IP="192.168.10.41"
 
 # =============================================================================
 # 1. INSTALLATION DES PAQUETS
@@ -33,6 +33,7 @@ echo "[2/4] Configuration de LVM..."
 # Option 1: Utiliser un fichier loop (pour le lab)
 if [ ! -b /dev/sdb ]; then
     echo "Creation d'un volume loop pour le lab..."
+    mkdir -p /var/lib/cinder
     dd if=/dev/zero of=/var/lib/cinder/cinder-volumes.img bs=1M count=10240
     LOOP_DEVICE=$(losetup -f)
     losetup ${LOOP_DEVICE} /var/lib/cinder/cinder-volumes.img
@@ -40,8 +41,20 @@ if [ ! -b /dev/sdb ]; then
     vgcreate cinder-volumes ${LOOP_DEVICE}
 
     # Ajouter au demarrage
-    echo "losetup ${LOOP_DEVICE} /var/lib/cinder/cinder-volumes.img" >> /etc/rc.local
-    chmod +x /etc/rc.local
+    cat > /etc/systemd/system/cinder-loop.service << EOFSERVICE
+[Unit]
+Description=Setup Cinder Loop Device
+Before=cinder-volume.service
+
+[Service]
+Type=oneshot
+ExecStart=/sbin/losetup ${LOOP_DEVICE} /var/lib/cinder/cinder-volumes.img
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOFSERVICE
+    systemctl enable cinder-loop.service
 else
     # Option 2: Utiliser un disque reel
     pvcreate /dev/sdb

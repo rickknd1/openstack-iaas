@@ -12,7 +12,7 @@ echo "Installation de Swift Storage - Storage Node"
 echo "=========================================="
 
 # Variables
-STORAGE_IP="10.0.0.1"
+STORAGE_IP="192.168.10.41"
 
 # =============================================================================
 # 1. INSTALLATION DES PAQUETS
@@ -29,6 +29,7 @@ echo "[2/4] Preparation du stockage..."
 if [ ! -b /dev/sdc ]; then
     echo "Creation d'un stockage loop pour Swift..."
     mkdir -p /srv/node/sdc
+    mkdir -p /var/lib/swift
 
     # Creer un fichier de 20Go pour Swift
     dd if=/dev/zero of=/var/lib/swift/swift-storage.img bs=1M count=20480
