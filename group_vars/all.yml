@@ -10,12 +10,12 @@ management_network: "192.168.10.0/24"
 provider_network: "192.168.10.0/24"
 
 # Node IPs (ens33 - NAT)
-controller_ip: "192.168.10.11"
-compute_ip: "192.168.10.31"
-storage_ip: "192.168.10.41"
+controller_ip: "192.168.10.130"
+compute_ip: "192.168.10.131"
+storage_ip: "192.168.10.132"
 
 # External IPs
-controller_external_ip: "192.168.10.11"
+controller_external_ip: "192.168.10.130"
 
 # Gateway VMware NAT
 gateway_ip: "192.168.10.2"

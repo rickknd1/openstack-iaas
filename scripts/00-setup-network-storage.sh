@@ -12,7 +12,7 @@ echo "Configuration Reseau - Storage"
 echo "=========================================="
 
 HOSTNAME="storage"
-IP_ADDRESS="192.168.10.41"
+IP_ADDRESS="192.168.10.132"
 GATEWAY="192.168.10.2"
 DNS="8.8.8.8"
 
@@ -58,7 +58,7 @@ echo "Test ping vers gateway..."
 ping -c 2 ${GATEWAY} && echo "OK: Gateway joignable!" || echo "ERREUR: Gateway non joignable"
 
 echo "Test ping vers controller..."
-ping -c 2 192.168.10.11 && echo "OK: Controller joignable!" || echo "ERREUR: Controller non joignable"
+ping -c 2 192.168.10.130 && echo "OK: Controller joignable!" || echo "ERREUR: Controller non joignable"
 
 echo "=========================================="
 echo "Configuration reseau terminee!"

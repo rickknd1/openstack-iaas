@@ -20,7 +20,7 @@ NEUTRON_PASS="neutron_pass"
 NOVA_PASS="nova_pass"
 RABBITMQ_PASS="rabbit_openstack_pwd"
 METADATA_SECRET="metadata_secret_key"
-CONTROLLER_IP="192.168.10.11"
+CONTROLLER_IP="192.168.10.130"
 PROVIDER_INTERFACE="ens33"
 
 # Charger les credentials admin

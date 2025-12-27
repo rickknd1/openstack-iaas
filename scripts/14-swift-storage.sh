@@ -12,7 +12,7 @@ echo "Installation de Swift Storage - Storage Node"
 echo "=========================================="
 
 # Variables
-STORAGE_IP="192.168.10.41"
+STORAGE_IP="192.168.10.132"
 
 # =============================================================================
 # 1. INSTALLATION DES PAQUETS

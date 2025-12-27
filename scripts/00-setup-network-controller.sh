@@ -12,7 +12,7 @@ echo "Configuration Reseau - Controller"
 echo "=========================================="
 
 HOSTNAME="controller"
-IP_ADDRESS="192.168.10.11"
+IP_ADDRESS="192.168.10.130"
 GATEWAY="192.168.10.2"
 DNS="8.8.8.8"
 

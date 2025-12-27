@@ -14,7 +14,7 @@ echo "=========================================="
 # Variables
 NEUTRON_PASS="neutron_pass"
 RABBITMQ_PASS="rabbit_openstack_pwd"
-COMPUTE_IP="192.168.10.31"
+COMPUTE_IP="192.168.10.131"
 PROVIDER_INTERFACE="ens33"
 
 # =============================================================================

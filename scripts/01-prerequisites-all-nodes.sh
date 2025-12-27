@@ -24,9 +24,9 @@ sed -i '/storage/d' /etc/hosts
 cat >> /etc/hosts << 'EOF'
 
 # OpenStack Nodes (NAT - 192.168.10.0/24)
-192.168.10.11   controller
-192.168.10.31   compute
-192.168.10.41   storage
+192.168.10.130   controller
+192.168.10.131   compute
+192.168.10.132   storage
 
 # Infrastructure classe (pour connexion future)
 # 192.168.100.136  controller-ameni

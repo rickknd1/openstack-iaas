@@ -18,7 +18,7 @@ NOVA_DB_PASS="nova_dbpass"
 NOVA_PASS="nova_pass"
 PLACEMENT_PASS="placement_pass"
 RABBITMQ_PASS="rabbit_openstack_pwd"
-CONTROLLER_IP="192.168.10.11"
+CONTROLLER_IP="192.168.10.130"
 
 # Charger les credentials admin
 source /root/admin-openrc

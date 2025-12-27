@@ -14,7 +14,7 @@ echo "=========================================="
 MYSQL_ROOT_PASS="openstack_root_pwd"
 RABBITMQ_USER="openstack"
 RABBITMQ_PASS="rabbit_openstack_pwd"
-CONTROLLER_IP="192.168.10.11"
+CONTROLLER_IP="192.168.10.130"
 
 # =============================================================================
 # 1. INSTALLATION ET CONFIGURATION DE MARIADB

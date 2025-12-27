@@ -7,7 +7,7 @@ Ce projet deploie une infrastructure OpenStack complete sur 3 machines virtuelle
 ```
 +-------------------+     +-------------------+     +-------------------+
 |    CONTROLLER     |     |      COMPUTE      |     |      STORAGE      |
-|  192.168.10.11    |     |   192.168.10.31   |     |   192.168.10.41   |
+|  192.168.10.130   |     |   192.168.10.131  |     |   192.168.10.132  |
 +-------------------+     +-------------------+     +-------------------+
 |                   |     |                   |     |                   |
 | - Keystone        |     | - Nova Compute    |     | - Cinder Volume   |
@@ -33,9 +33,9 @@ Ce projet deploie une infrastructure OpenStack complete sur 3 machines virtuelle
 
 | Node       | ens33 (NAT)        | Hostname   |
 |------------|--------------------|------------|
-| Controller | 192.168.10.11/24   | controller |
-| Compute    | 192.168.10.31/24   | compute    |
-| Storage    | 192.168.10.41/24   | storage    |
+| Controller | 192.168.10.130/24  | controller |
+| Compute    | 192.168.10.131/24  | compute    |
+| Storage    | 192.168.10.132/24  | storage    |
 
 Gateway: 192.168.10.2 (VMware NAT)
 
@@ -159,9 +159,9 @@ sudo bash 20-test-instance.sh
 
 | Service    | URL                              | Credentials              |
 |------------|----------------------------------|--------------------------|
-| Horizon    | http://192.168.10.11/horizon     | admin / admin_secret_pwd |
-| Prometheus | http://192.168.10.11:9090        | -                        |
-| Grafana    | http://192.168.10.11:3000        | admin / admin            |
+| Horizon    | http://192.168.10.130/horizon    | admin / admin_secret_pwd |
+| Prometheus | http://192.168.10.130:9090       | -                        |
+| Grafana    | http://192.168.10.130:3000       | admin / admin            |
 
 ## Commandes de Verification
 
